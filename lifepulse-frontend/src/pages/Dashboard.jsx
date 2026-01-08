@@ -4,45 +4,56 @@ import "./Dashboard.css";
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
+  const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [weather, setWeather] = useState(null);
-
 
   useEffect(() => {
-    api.get("/pulse/today")
-      .then(res => {
-        setData(res.data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
+    let isMounted = true;
 
-    // Update time every minute
+    const fetchData = async () => {
+      try {
+        const pulseRes = await api.get("/pulse/today");
+        if (isMounted) setData(pulseRes.data);
+      } catch (err) {
+        console.error("Pulse error:", err);
+      }
+
+      try {
+        const weatherRes = await api.get("/weather/current");
+        if (isMounted) setWeather(weatherRes.data);
+      } catch (err) {
+        console.warn("Weather unavailable:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchData();
+
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 60000);
 
-    return () => clearInterval(timer);
+    return () => {
+      isMounted = false;
+      clearInterval(timer);
+    };
   }, []);
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true 
+  const formatTime = (date) =>
+    date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
     });
-  };
 
-  const formatDate = (date) => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
+  const formatDate = (date) =>
+    date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
     });
-  };
 
   if (loading) {
     return (
@@ -60,7 +71,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
   return (
     <div className="dashboard">
       {/* Top Header */}
@@ -145,17 +155,45 @@ export default function Dashboard() {
           <span className="card-status status-coming">Coming Soon</span>
         </div>
 
-        {/* Current Temperature */}
-        <div className="card card-temp">
-          <div className="card-icon-wrapper temp-icon">
-            <svg className="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          </div>
-          <h3 className="card-title">Temperature</h3>
-          <p className="card-value">--°C</p>
-          <span className="card-status status-coming">Coming Soon</span>
-        </div>
+       {/* Current Temperature */}
+<div className="card card-temp">
+  <div className="card-icon-wrapper temp-icon">
+    <svg
+      className="card-icon"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+      />
+    </svg>
+  </div>
+
+  <h3 className="card-title">Temperature</h3>
+
+  {weather ? (
+    <>
+      <p className="card-value">
+        {Math.round(weather.temperature)}°C
+      </p>
+      <span className="card-status status-live">
+        {weather.condition}
+      </span>
+    </>
+  ) : (
+    <>
+      <p className="card-value">--°C</p>
+      <span className="card-status status-loading">
+        Loading...
+      </span>
+    </>
+  )}
+</div>
+
 
         {/* AQI Category */}
         <div className="card card-category">
