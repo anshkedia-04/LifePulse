@@ -1,0 +1,19 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  color: #e5e7eb;
+  min-height: 100vh;
+}
+
+input, button {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
