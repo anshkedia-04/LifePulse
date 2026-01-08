@@ -3,7 +3,9 @@ from app.routers import health, pulse
 from app.routers import auth
 from app.core.database import engine
 from app.models import user_db, pulse_db
+from app.routers import weather
 from fastapi.middleware.cors import CORSMiddleware
+
 
 user_db.Base.metadata.create_all(bind=engine)
 pulse_db.Base.metadata.create_all(bind=engine)
@@ -29,4 +31,6 @@ def root():
 app.include_router(health.router, prefix="/api/v1")
 app.include_router(pulse.router, prefix="/api/v1")
 app.include_router(auth.router, prefix="/api/v1")
+app.include_router(weather.router, prefix="/api/v1")
+
 
